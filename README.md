@@ -92,7 +92,7 @@ function Write-Hello {
 }
 ```
 
-![feels_good](.images\feels_good.jpg)
+![feels_good](https://github.com/wethreetrees/Dynamic/blob/master/.images/feels_good.jpg)
 
 > Defining dynamic parameters should ***feel good***.
 
