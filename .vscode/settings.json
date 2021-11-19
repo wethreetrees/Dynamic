@@ -10,5 +10,8 @@
     "editor.semanticHighlighting.enabled": false,
     "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
     "files.trimTrailingWhitespace": true,
-  }
+  },
+  "coverage-gutters.showGutterCoverage": false,
+  "coverage-gutters.showLineCoverage": true,
+  "powershell.pester.useLegacyCodeLens": false
 }

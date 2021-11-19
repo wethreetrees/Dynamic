@@ -16,25 +16,32 @@ using System.Management.Automation;
 
 $null = Add-Type -TypeDefinition $code *>&1
 
-function Set-DynamicParameterDefinition {
+function Resolve-DynamicFunctionDefinition {
     <#
-            .SYNOPSIS
-            takes a scriptblock with a static param() parameter definition and returns a PowerShell function where designated parameters are turned into dynamic parameters.
+        .SYNOPSIS
+            Generates a scriptblock defining an interpreted function based on the provided function info
 
-            .DESCRIPTION
+        .DESCRIPTION
             Module adds a new attribute named [Dynamic()] that can be used to turn static parameters into dynamic parameters.
-            For this to work, submit a scriptblock to the attribute. When the scriptblock evaluates to $true, the parameter is visible, else it is not available.
 
-            .EXAMPLE
-            Get-PsoDynamicParameterDefinition -ScriptBlock Value -FunctionName Value
-            Takes the parameter definition from $parameters, turns all parameters designated with the attribute [Dynamic()] into dynamic parameters and emits the new function body
+            The attribute definition will be defined above a standard parameter definition and must contain a scriptblock that
+            evaluates truthiness. Resolve-DynamicFunctionDefinition will then interpret the [Dynamic(...)] attributes into standard
+            PowerShell dynamic parameter declarations and return back a scriptblock with the new function definition.
 
-            .EXAMPLE
-            Get-PsoDynamicParameterDefinition -FunctionInfo Value
-            Describe what this call does
+            Example Dynamic Parameter Declaration:
 
-            .LINK
-            https://github.com/TobiasPSP/Modules.dynamicparam
+                [Dynamic({$OtherParameter -match "(Value1|Value2)"})]
+                [Parameter(Mandatory)]
+                [string]$Name
+
+        .EXAMPLE
+            Resolve-DynamicFunctionDefinition -FunctionInfo Value
+
+            Evaluates function definition for dynamic parameters and returns a new scriptblock containing
+            a function definition to properly handle the defined dynamic parameters
+
+        .NOTES
+            Inspired in large part by Dr. Tobias Weltner (https://github.com/TobiasPSP/) and his amazing work at https://powershell.one/
     #>
 
     [CmdletBinding()]
@@ -96,7 +103,7 @@ function Set-DynamicParameterDefinition {
                 $null = $result.AppendLine($FunctionInfo.ScriptBlock)
                 $null = $result.Append('}')
 
-                return $result
+                return [ScriptBlock]::Create($result)
             }
 
             # extract the content of the param() block from the submitted scriptblock:
@@ -134,7 +141,7 @@ function Set-DynamicParameterDefinition {
                     $null = $result.AppendLine()
                     $null = $result.AppendLine('        <#')
                     $null = $result.AppendLine("            region Start Parameter -${name} ####")
-                    $null = $result.AppendLine('            created programmatically via Set-DynamicParameterDefinition')
+                    $null = $result.AppendLine('            created programmatically via Resolve-DynamicFunctionDefinition')
                     $null = $result.AppendLine('        #>')
                     $null = $result.AppendLine()
                     if ($condition) {
@@ -216,7 +223,7 @@ function Set-DynamicParameterDefinition {
                     $null = $result.AppendLine()
                     $null = $result.AppendLine('        <#')
                     $null = $result.AppendLine("            endregion End Parameter -${name} ####")
-                    $null = $result.AppendLine('            created programmatically via Set-DynamicParameterDefinition')
+                    $null = $result.AppendLine('            created programmatically via Resolve-DynamicFunctionDefinition')
                     $null = $result.AppendLine('        #>')
                     $null = $result.AppendLine()
                 }
@@ -241,11 +248,11 @@ function Set-DynamicParameterDefinition {
 '@)
 
             $beginBlock = $FunctionInfo.ScriptBlock.Ast.Body.BeginBlock.extent.Text
-            $beginBlockContent = $beginBlock -replace "^begin\s{`r`n" -replace '.*}$'
+            $beginBlockContent = $beginBlock -replace "^begin\s{\s?`n?" -replace '.*}$'
             if ($standardParamList.Count) {
                 $null = $result.AppendLine('        <#')
                 $null = $result.AppendLine('            region initialize variables for dynamic parameters')
-                $null = $result.AppendLine('            created programmatically via Set-DynamicParameterDefinition')
+                $null = $result.AppendLine('            created programmatically via Resolve-DynamicFunctionDefinition')
                 $null = $result.AppendLine('        #>')
                 $null = $result.AppendLine()
                 foreach ($varName in $dynParamList) {
@@ -259,7 +266,7 @@ function Set-DynamicParameterDefinition {
                 }
                 $null = $result.AppendLine('        <#')
                 $null = $result.AppendLine('            endregion initialize variables for dynamic parameters')
-                $null = $result.AppendLine('            created programmatically via Set-DynamicParameterDefinition')
+                $null = $result.AppendLine('            created programmatically via Resolve-DynamicFunctionDefinition')
                 $null = $result.AppendLine('        #>')
 
                 if (-not [string]::IsNullOrWhiteSpace($beginBlockContent)) {
@@ -278,13 +285,13 @@ function Set-DynamicParameterDefinition {
 "@)
 
             $processBlock = $FunctionInfo.ScriptBlock.Ast.Body.ProcessBlock.extent.Text
-            $processBlockContent = $processBlock -replace "^process\s{`r`n" -replace '.*}$'
+            $processBlockContent = $processBlock -replace "^process\s{\s?`n?" -replace '.*}$'
             if (-not [string]::IsNullOrWhiteSpace($processBlock) -or $pipelineParamList.Count) {
                 $null = $result.AppendLine('    process {')
                 if ($pipelineParamList.Count) {
                     $null = $result.AppendLine('        <#')
                     $null = $result.AppendLine('            region update variables for pipeline-aware parameters:')
-                    $null = $result.AppendLine('            created programmatically via Set-DynamicParameterDefinition')
+                    $null = $result.AppendLine('            created programmatically via Resolve-DynamicFunctionDefinition')
                     $null = $result.AppendLine('        #>')
                     $null = $result.AppendLine()
                     foreach ($varName in $pipelineParamList) {
@@ -293,7 +300,7 @@ function Set-DynamicParameterDefinition {
                     }
                     $null = $result.AppendLine('        <#')
                     $null = $result.AppendLine('            endregion update variables for pipeline-aware parameters')
-                    $null = $result.AppendLine('            created programmatically via Set-DynamicParameterDefinition')
+                    $null = $result.AppendLine('            created programmatically via Resolve-DynamicFunctionDefinition')
                     $null = $result.AppendLine('        #>')
 
                     if (-not [string]::IsNullOrWhiteSpace($processBlockContent)) {
@@ -304,7 +311,7 @@ function Set-DynamicParameterDefinition {
             }
 
             $endBlock = $FunctionInfo.ScriptBlock.Ast.Body.EndBlock.extent
-            $processBlockContent = $endBlock -replace '^end\s{' -replace '.*}$'
+            $processBlockContent = $endBlock -replace '^end\s{\s?`n?' -replace '.*}$'
             if (-not [string]::IsNullOrWhiteSpace($endBlock)) {
                 $null = $result.AppendLine($endBlock)
             }

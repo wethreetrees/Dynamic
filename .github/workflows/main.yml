@@ -1,0 +1,66 @@
+name: CICD
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+    paths:
+      - src\*
+  pull_request:
+    branches: [ master ]
+    paths:
+      - src\*
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Build module
+        shell: pwsh
+        run: .\build.ps1 -Task Build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist/*
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+      - name: Test with Pester
+        shell: pwsh
+        run: .\build.ps1 -Task Test -Coverage 
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: build/*.xml
+          if-no-files-found: error
+  publish:
+    # Only publish when we are running against the master branch
+    if: ${{ github.ref == 'refs/heads/master' }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+      - name: Publish to PSGallery
+        env:
+          NUGET_KEY: ${{ secrets.NUGET_KEY }}
+        shell: pwsh
+        run: .\build.ps1 -Task Publish

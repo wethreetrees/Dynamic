@@ -14,7 +14,7 @@ function Write-Hello
 
         <#
             region Start Parameter -Planet ####
-            created programmatically via Set-DynamicParameterDefinition
+            created programmatically via Resolve-DynamicFunctionDefinition
         #>
 
         if (
@@ -41,7 +41,7 @@ function Write-Hello
 
         <#
             endregion End Parameter -Planet ####
-            created programmatically via Set-DynamicParameterDefinition
+            created programmatically via Resolve-DynamicFunctionDefinition
         #>
 
         # return dynamic parameter collection:
@@ -51,7 +51,7 @@ function Write-Hello
     begin {
         <#
             region initialize variables for dynamic parameters
-            created programmatically via Set-DynamicParameterDefinition
+            created programmatically via Resolve-DynamicFunctionDefinition
         #>
 
         if($PSBoundParameters.ContainsKey('Planet')) { $Planet = $PSBoundParameters['Planet'] }
@@ -59,7 +59,7 @@ function Write-Hello
 
         <#
             endregion initialize variables for dynamic parameters
-            created programmatically via Set-DynamicParameterDefinition
+            created programmatically via Resolve-DynamicFunctionDefinition
         #>
     }
 

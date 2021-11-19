@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<plasterManifest
+  schemaVersion="1.1"
+  templateType="Item" xmlns="http://www.microsoft.com/schemas/PowerShell/Plaster/v1">
+  <metadata>
+    <name>FunctionTestScript</name>
+    <id>8c172a66-0d06-48c0-9e90-7804dc374083</id>
+    <version>1.0.0</version>
+    <title>FunctionTestScript</title>
+    <description>Generates a new Pester test script for a module function</description>
+    <author>Tyler Richardson</author>
+    <tags></tags>
+  </metadata>
+  <parameters>
+    <parameter name='ModuleName'
+               type='text'
+               prompt='Enter the name of the module' />
+    <parameter name='FunctionName'
+               type='text'
+               prompt='Enter the name of the function' />
+    <parameter name='FunctionType'
+               type='choice'
+               default='1'
+               prompt='Is this a private function?'>
+      <choice label='&amp;Private' value="Private"/>
+      <choice label='&amp;Public' value="Public"/>
+    </parameter>
+  </parameters>
+  <content>
+  <message>
+    Creating Pester test file | '$PLASTER_PARAM_ModuleName':'$PLASTER_PARAM_FunctionName'
+  </message>
+  <templateFile source='function.Tests.template.ps1'
+                destination='Private\$PLASTER_PARAM_FunctionName.Tests.ps1'
+                condition='$PLASTER_PARAM_FunctionType -eq "Private"'/>
+  <templateFile source='function.Tests.template.ps1'
+                destination='Public\$PLASTER_PARAM_FunctionName.Tests.ps1'
+                condition='$PLASTER_PARAM_FunctionType -eq "Public"'/>
+  </content>
+</plasterManifest>

@@ -1,19 +1,321 @@
-## Contributing
+# ✨ Dynamic ✨
+
+Working with dynamic parameters in PowerShell has never been *easy*. With the **Dynamic** module, I am setting out to change that forever.
+
+The *old* way requires users to have an advanced knowledge of PowerShell and using .NET objects to even get started. There is **tons** of great documentation, in the community, that provides step-by-step instructions on how to define and use dynamic parameters, but it still **feels** bad.
+
+```powershell
+# The PAST (╯°□°）╯︵ ┻━┻
+function Write-Hello
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        $Name = 'World'
+    )
+
+    dynamicparam
+    {
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        if (
+            $null -eq $PSBoundParameters['Name']
+        ) {
+            $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
+
+            $attrib = [Parameter]::new()
+            $attrib.Mandatory=$true
+            $attributeCollection.Add($attrib)
+
+            $attrib = [ValidateSet]::new('Mercury','Venus','Earth','Mars','Jupiter','Saturn','Uranus','Neptune')
+            $attributeCollection.Add($attrib)
+
+            $dynParam = [System.Management.Automation.RuntimeDefinedParameter]::new('Planet',[string],$attributeCollection)
+
+            $paramDictionary.Add('Planet',$dynParam)
+        }
+
+        $paramDictionary
+    }
+
+    begin {
+
+        if($PSBoundParameters.ContainsKey('Planet')) { $Planet = $PSBoundParameters['Planet'] }
+        else { $Planet = $null}
+
+    }
+
+    process {
+        Write-Output "Hello, $Name!"
+        if ($Planet) {
+            Write-Output "Welome to $Planet!"
+        }
+    }
+}
+```
+
+**Dynamic** enables PowerShell developers to define dynamic parameters in the param blocks of their existing functions with a *set it and forget it* mentality.
+
+```powershell
+# The FUTURE (⌐■_■)
+function Write-Hello {
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        $Name = 'World',
+
+        [Parameter(Mandatory)]
+        [Dynamic({
+            $null -eq $PSBoundParameters['Name']
+        })]
+        [ValidateSet(
+            'Mercury',
+            'Venus',
+            'Earth',
+            'Mars',
+            'Jupiter',
+            'Saturn',
+            'Uranus',
+            'Neptune'
+        )]
+        [string]$Planet
+    )
+
+    process {
+        Write-Output "Hello, $Name!"
+        if ($Planet) {
+            Write-Output "Welome to $Planet!"
+        }
+    }
+
+}
+```
+
+![feels_good](.images\feels_good.jpg)
+
+> Defining dynamic parameters should ***feel good***.
+
+– wethreetrees
+
+## 💻 Installation
+
+You can install the latest release from the [PSGallery](https://www.powershellgallery.com/packages/Dynamic) with:
+
+```powershell
+Install-Module -Name Dynamic -Repository PSGallery
+```
+
+### Local Development
+
+You can also build the module yourself. The build script has many options, which can be discovered with the following command:
+
+```powershell
+./build.ps1 -Task ?
+```
+
+Run a typical build, with tests and coverage
+
+```powershell
+./build.ps1 -Coverage
+```
+
+Run the default build tasks and import the built module
+
+```powershell
+./build.ps1 -Task Import
+```
+
+## 🧩 Integration
+
+To integrate the **Dynamic** standard for dynamic parameter definitions, you can follow three distinct paths.
+
+### 🐱‍👤 Full Integration
+
+For full integration, it is recommended to run **Dynamic** as part of your ci/cd pipeline.
+
+You can follow the same steps illustrated in the *Advanced Integration* method, but before you write out your function scripts to your `dist` directory.
+
+This gives you the benefit of fully supported `[Dynamic()]` attributes as well as full IDE debug support, by setting breakpoints in your function definitions located in the `dist` directory.
+
+### ⚙ Advanced Integration
+
+*Reference:*  [WriteHello Test Module](./tests/resources/WriteHello/WriteHello.psm1)
+
+You can *overwrite* your existing function defintions in memory while loading your module. This is a highly recommended method, but you lose the ability to debug your function scripts in your IDE. So it will always be recommended to integrate using the full integration method above.
+
+In most `psm1` files, you will be doing something like this:
+
+```powershell
+$public = Get-ChildItem -Path $PSScriptRoot/public -Filter *.ps1
+
+foreach ($script in $public) {
+    . $script
+}
+```
+
+To integrate with **Dynamic**, you only have to add two lines of code:
+
+```powershell
+$public = Get-ChildItem -Path $PSScriptRoot/public -Filter *.ps1
+
+foreach ($script in $public) {
+    . $script.FullName
+
+    $functionInfo = Get-Command -Name $script.BaseName
+
+    . (Resolve-DynamicFunctionDefinition -FunctionInfo $functionInfo)
+}
+```
+
+### 📎 Simple Integration
+
+The simple integration method can be used to write new scripts or convert existing scripts to easily define new dynamic parameters.
+
+***Note: This method is a one-way process and not strictly recommended***
+
+You will begin with a function definition and end with a **final** result, saved forever in your project. This is not necessarily the *best* approach, as you lose the advantages of full integration, listed above.
+
+This example will define a function with a new `[Dynamic()]` parameter definition and the end result will be a scriptblock containing the new interpreted function containing the full dynamic parameter definitions.
+
+You can pipe the last command to `Set-ClipBoard` and paste it directly into your function script.
+
+**Example:**
+
+```powershell
+# This function can be defined in a ps1 script and dot sourced into the session, e.g. . ./Get-Recipe.ps1
+
+function Get-Recipe {
+    param (
+        [Parameter()]
+        [switch]$Allergy,
+
+        [Dynamic({$PSBoundParameters['Allergy']})]
+        [Parameter(Mandatory)]
+        [ValidateSet(
+            'Nut',
+            'Egg'
+        )]
+        [string]$AllergyType
+    )
+
+    process {
+        if ($Allergy) {
+            return "Here is a recipe that is $AllergyType free!"
+        }
+
+        return "Here is a delicious recipe!"
+    }
+}
+
+Resolve-DynamicFunctionDefinition -FunctionInfo (Get-Command Get-Recipe)
+```
+
+**Result:**
+```powershell
+function Get-Recipe
+{
+    param
+    (
+        [Parameter(Mandatory)]
+        [switch]$Allergy
+    )
+
+    dynamicparam
+    {
+        # create container for all dynamically created parameters:
+        $paramDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+
+        <#
+            region Start Parameter -AllergyType ####
+            created programmatically via Resolve-DynamicFunctionDefinition
+        #>
+
+        if ($PSBoundParameters['Allergy']) {
+        # create container storing all attributes for parameter -AllergyType
+        $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
+
+        # Define attribute [Parameter()]:
+        $attrib = [Parameter]::new()
+        $attrib.Mandatory=$true
+        $attributeCollection.Add($attrib)
+
+        # Define attribute [ValidateSet()]:
+        $attrib = [ValidateSet]::new('Nut','Egg')
+        $attributeCollection.Add($attrib)
+
+        # compose dynamic parameter:
+        $dynParam = [System.Management.Automation.RuntimeDefinedParameter]::new('AllergyType',[string],$attributeCollection)
+
+        # add parameter to parameter collection:
+        $paramDictionary.Add('AllergyType',$dynParam)
+        }
+
+        <#
+            endregion End Parameter -AllergyType ####
+            created programmatically via Resolve-DynamicFunctionDefinition
+        #>
+
+        # return dynamic parameter collection:
+        $paramDictionary
+    }
+
+    begin {
+        <#
+            region initialize variables for dynamic parameters
+            created programmatically via Resolve-DynamicFunctionDefinition
+        #>
+
+        if($PSBoundParameters.ContainsKey('AllergyType')) { $AllergyType = $PSBoundParameters['AllergyType'] }
+        else { $AllergyType = $null}
+
+        <#
+            endregion initialize variables for dynamic parameters
+            created programmatically via Resolve-DynamicFunctionDefinition
+        #>
+    }
+
+    process {
+        if ($Allergy) {
+            return "Here is a $AllergyType free recipe!"
+        }
+
+        return "Here is a delicious recipe!"
+    }
+}
+
+```
+
+## 📩 Contributing
+
+Please first look over the `CODE_OF_CONDUCT.md` for community guidelines. Below are a few items to assist in creating any code contributions to **Dynamic**.
 
 ### Adding a new test case
 
+Always be on the lookout for new test cases!
+
+***Full code coverage != Full use case coverage***
+
+When adding functionailty, fixing a bug, or even just perusing the source code, if you identify a gap in *use case* coverage, add a test case! You can reference the [WriteHello Test Module](./tests/resources/WriteHello) and the existing [tests](./tests) for examples on how to structure any new cases.
+
+If you see any areas for improvement, please open an issue or submit a pull request!
+
 1. Create a new script, utilizing the `[Dynamic()]` parameter attribute
 2. Run the following commands to get the function info and generate the *expected* result, replacing the path and function name to match your new function
-```ps
+```powershell
 # Load the new function script into the current PowerShell session
 . "./tests/resources/WriteHello/public/Write-Hello.ps1"
 
 # Get the function info
 $functionInfo = Get-Command -Name Write-Hello
 
-# Import the PSDynParam module
-Import-Module ./PSDynParam.psd1 -Force
+# Import the Dynamic module
+Import-Module ./Dynamic.psd1 -Force
 
 # Compile the expected output to the FunctionDefinitions directory
-Set-DynamicParameterDefinition -FunctionInfo $functionInfo | Set-Content -Path "./tests/resources/FunctionDefinitions/Write-Hello.dyndef.ps1" -NoNewLine
+Resolve-DynamicFunctionDefinition -FunctionInfo $functionInfo | Set-Content -Path "./tests/resources/FunctionDefinitions/Write-Hello.dyndef.ps1" -NoNewLine
 ```
+
+## 🙏 Acknowledgements
+
+Inspired **greatly** by Dr. Tobias Weltner (https://github.com/TobiasPSP/) and his amazing work at https://powershell.one/

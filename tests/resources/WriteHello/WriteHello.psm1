@@ -1,5 +1,3 @@
-using module ../../../PsDynParam.psd1
-
 $public = Get-ChildItem -Path $PSScriptRoot/public -Filter *.ps1 -ErrorAction SilentlyContinue
 $private = Get-ChildItem -Path $PSScriptRoot/private -Filter *.ps1 -ErrorAction SilentlyContinue
 
@@ -10,9 +8,9 @@ foreach ($script in $private) {
 foreach ($script in $public) {
     . $script.FullName
 
-    $functionInfo = Get-Command -Name Write-Hello
+    $functionInfo = Get-Command -Name $script.BaseName
 
-    . (Set-DynamicParameterDefinition -FunctionInfo $functionInfo)
+    . (Resolve-DynamicFunctionDefinition -FunctionInfo $functionInfo)
 }
 
 Export-ModuleMember -Function $public.BaseName
