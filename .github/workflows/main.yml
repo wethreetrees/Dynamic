@@ -10,7 +10,6 @@ on:
     branches: [ master ]
     paths:
       - src\*
-  workflow_dispatch:
 
 jobs:
   build:
