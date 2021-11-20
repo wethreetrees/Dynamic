@@ -13,3 +13,6 @@ testResults.xml
 # Workspace files
 .vscode/
 scratch.ps1
+
+# Test Results
+testResults.xml
