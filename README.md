@@ -106,6 +106,14 @@ You can install the latest release from the [PSGallery](https://www.powershellga
 Install-Module -Name Dynamic -Repository PSGallery
 ```
 
+### Updating
+
+Update **Dynamic** using `Update-Module`
+
+```powershell
+Update-Module -Name Dynamic
+```
+
 ### Local Development
 
 You can also build the module yourself. The build script has many options, which can be discovered with the following command:
@@ -286,36 +294,6 @@ function Get-Recipe
 
 ```
 
-## 📩 Contributing
+## 🙏 Acknowledgments
 
-Please first look over the `CODE_OF_CONDUCT.md` for community guidelines. Below are a few items to assist in creating any code contributions to **Dynamic**.
-
-### Adding a new test case
-
-Always be on the lookout for new test cases!
-
-***Full code coverage != Full use case coverage***
-
-When adding functionailty, fixing a bug, or even just perusing the source code, if you identify a gap in *use case* coverage, add a test case! You can reference the [WriteHello Test Module](./tests/resources/WriteHello) and the existing [tests](./tests) for examples on how to structure any new cases.
-
-If you see any areas for improvement, please open an issue or submit a pull request!
-
-1. Create a new script, utilizing the `[Dynamic()]` parameter attribute
-2. Run the following commands to get the function info and generate the *expected* result, replacing the path and function name to match your new function
-```powershell
-# Load the new function script into the current PowerShell session
-. "./tests/resources/WriteHello/public/Write-Hello.ps1"
-
-# Get the function info
-$functionInfo = Get-Command -Name Write-Hello
-
-# Import the Dynamic module
-Import-Module ./Dynamic.psd1 -Force
-
-# Compile the expected output to the FunctionDefinitions directory
-Resolve-DynamicFunctionDefinition -FunctionInfo $functionInfo | Set-Content -Path "./tests/resources/FunctionDefinitions/Write-Hello.dyndef.ps1" -NoNewLine
-```
-
-## 🙏 Acknowledgements
-
-Inspired **greatly** by Dr. Tobias Weltner (https://github.com/TobiasPSP/) and his amazing work at https://powershell.one/
+Inspired **greatly** by [Dr. Tobias Weltner](https://github.com/TobiasPSP/) and his amazing work at [powershell.one](https://powershell.one/)
