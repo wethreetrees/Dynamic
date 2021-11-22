@@ -10,7 +10,7 @@ foreach ($script in $public) {
 
     $functionInfo = Get-Command -Name $script.BaseName
 
-    . (Resolve-DynamicFunctionDefinition -FunctionInfo $functionInfo)
+    . (Resolve-DynamicFunctionDefinition -FunctionInfo $functionInfo -WarningAction SilentlyContinue)
 }
 
 Export-ModuleMember -Function $public.BaseName

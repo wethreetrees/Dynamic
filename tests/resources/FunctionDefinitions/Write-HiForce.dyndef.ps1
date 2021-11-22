@@ -1,7 +1,6 @@
-function Write-Hello {
+function Write-HiForce {
     [CmdletBinding()]
     param (
-        [Parameter()]
         $Name = 'World'
     )
 
@@ -18,13 +17,12 @@ function Write-Hello {
             # create container storing all attributes for parameter -Planet
             $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
 
-            # Define attribute [Parameter()]:
-            $attrib = [Parameter]::new()
-            $attrib.Mandatory = $true
-            $attributeCollection.Add($attrib)
-
             # Define attribute [ValidateSet()]:
             $attrib = [ValidateSet]::new('Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune')
+            $attributeCollection.Add($attrib)
+
+            # Define attribute [Parameter()]
+            $attrib = [Parameter]::new()
             $attributeCollection.Add($attrib)
 
             # compose dynamic parameter:
@@ -59,7 +57,7 @@ function Write-Hello {
     }
 
     process {
-        Write-Output "Hello, $Name!"
+        Write-Output "Hi, $Name!"
         if ($Planet) {
             Write-Output "Welcome to $Planet!"
         }

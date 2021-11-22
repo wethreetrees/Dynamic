@@ -6,6 +6,9 @@ Param (
     [Parameter(Mandatory, ParameterSetName = 'Coverage')]
     [switch]$Coverage,
 
+    [Parameter()]
+    [switch]$CI,
+
     [Parameter(ParameterSetName = 'Coverage')]
     [double]$MinimumCoverage = 70,
 

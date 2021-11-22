@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Run tests in current file with CC",
+            "type": "PowerShell",
+            "request": "launch",
+            "script": "${workspaceFolder}/.vscode/test.ps1",
+            "args": [
+                "-Path", "'${file}'",
+                "-Output", "${config:powershell.pester.outputVerbosity}",
+                "-CodeCoverage",
+            ],
+            "cwd": "${workspaceFolder}",
+        },
+        {
             "name": "PowerShell: Interactive Session",
             "type": "PowerShell",
             "request": "launch",

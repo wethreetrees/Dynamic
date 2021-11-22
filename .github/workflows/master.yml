@@ -3,11 +3,12 @@ name: CICD
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
+    branches: [master]
     paths:
       - src\*
   pull_request:
-    branches: [ master ]
+    types: [opened, reopened, edited]
+    branches: [master]
     paths:
       - src\*
   workflow_dispatch:
@@ -20,7 +21,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Build module
         shell: pwsh
-        run: .\build.ps1 -Task Build
+        run: .\build.ps1 -Task Build -CI
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
         with:
@@ -39,7 +40,7 @@ jobs:
           path: dist
       - name: Test with Pester
         shell: pwsh
-        run: .\build.ps1 -Task Test -Coverage 
+        run: .\build.ps1 -Task Test -Coverage -CI
       - name: Upload test results
         uses: actions/upload-artifact@v2
         with:
@@ -63,4 +64,4 @@ jobs:
         env:
           NUGET_KEY: ${{ secrets.NUGET_KEY }}
         shell: pwsh
-        run: .\build.ps1 -Task Publish
+        run: .\build.ps1 -Task Publish -CI

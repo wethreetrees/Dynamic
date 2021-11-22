@@ -10,6 +10,7 @@
     BuildHelpers          = '2.0.15'
     Configuration         = '1.3.1'
     Plaster               = '1.1.3'
+    PSObjectTools         = '0.1.0'
     InvokeBuild           = @{
         Version = '5.8.5'
         Tags    = 'Build'

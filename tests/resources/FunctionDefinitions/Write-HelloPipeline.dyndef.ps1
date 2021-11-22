@@ -1,4 +1,4 @@
-function Write-Hello {
+function Write-HelloPipeline {
     [CmdletBinding()]
     param (
         [Parameter()]
@@ -21,6 +21,7 @@ function Write-Hello {
             # Define attribute [Parameter()]:
             $attrib = [Parameter]::new()
             $attrib.Mandatory = $true
+            $attrib.ValueFromPipeline = $true
             $attributeCollection.Add($attrib)
 
             # Define attribute [ValidateSet()]:
@@ -59,6 +60,18 @@ function Write-Hello {
     }
 
     process {
+        <#
+            region update variables for pipeline bound parameters
+            created programmatically via Resolve-DynamicFunctionDefinition
+        #>
+
+        if ($PSBoundParameters.ContainsKey('Planet')) { $Planet = $PSBoundParameters['Planet'] }
+
+        <#
+            endregion update variables for pipeline bound parameters
+            created programmatically via Resolve-DynamicFunctionDefinition
+        #>
+
         Write-Output "Hello, $Name!"
         if ($Planet) {
             Write-Output "Welcome to $Planet!"

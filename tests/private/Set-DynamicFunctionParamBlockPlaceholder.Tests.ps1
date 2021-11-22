@@ -1,18 +1,22 @@
 BeforeDiscovery {
     # Setup parameter test cases
     $parameterTestCases = @(
-        # @{
-        #     Name      = 'ParameterName'
-        #     Mandatory = $true
-        #     Type      = [string]
-        # },
-        # ...
+        @{
+            Name      = 'StringBuilder'
+            Mandatory = $true
+            Type      = [System.Text.StringBuilder]
+        },
+        @{
+            Name      = 'ParameterList'
+            Mandatory = $true
+            Type      = [System.Collections.ObjectModel.Collection[string]]
+        }
     )
 
     # Setup custom function test cases
 }
 
-Describe "<%= $PLASTER_PARAM_FunctionName %> Unit Tests" -Tag Unit {
+Describe "Set-DynamicFunctionParamBlockPlaceholder Unit Tests" -Tag Unit {
 
     BeforeAll {
         $moduleProjectPath = $PSScriptRoot | Split-Path -Parent | Split-Path -Parent
@@ -25,18 +29,8 @@ Describe "<%= $PLASTER_PARAM_FunctionName %> Unit Tests" -Tag Unit {
     Context "Parameter Tests" {
 
         BeforeAll {
-<%
-                if ($PLASTER_PARAM_FunctionType -eq 'Private') {
-            @'
             # Executing this in the module scope since private functions are not available
-            $commandInfo = InModuleScope -ModuleName <%= $PLASTER_PARAM_ModuleName %> -ScriptBlock { Get-Command -Name '<%= $PLASTER_PARAM_FunctionName %>' }
-'@
-                } else {
-            @'
-            $commandInfo = Get-Command -Name '<%= $PLASTER_PARAM_FunctionName %>'
-'@
-                }
-%>
+            $commandInfo = InModuleScope -ModuleName Dynamic -ScriptBlock { Get-Command -Name 'Set-DynamicFunctionParamBlockPlaceholder' }
         }
 
         It 'Should have [<Type>] parameter [<Name>] ' -TestCases $parameterTestCases {
@@ -65,7 +59,7 @@ Describe "<%= $PLASTER_PARAM_FunctionName %> Unit Tests" -Tag Unit {
 
 }
 
-Describe "<%= $PLASTER_PARAM_FunctionName %> Integration Tests" -Tag Integration {
+Describe "Set-DynamicFunctionParamBlockPlaceholder Integration Tests" -Tag Integration {
 
     # Context "Use case" {
 
@@ -81,3 +75,4 @@ Describe "<%= $PLASTER_PARAM_FunctionName %> Integration Tests" -Tag Integration
     # ...
 
 }
+

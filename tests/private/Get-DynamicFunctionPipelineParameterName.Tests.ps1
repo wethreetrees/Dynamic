@@ -1,18 +1,17 @@
 BeforeDiscovery {
     # Setup parameter test cases
     $parameterTestCases = @(
-        # @{
-        #     Name      = 'ParameterName'
-        #     Mandatory = $true
-        #     Type      = [string]
-        # },
-        # ...
+        @{
+            Name      = 'ParameterAst'
+            Mandatory = $true
+            Type      = [System.Management.Automation.Language.ParameterAst[]]
+        }
     )
 
     # Setup custom function test cases
 }
 
-Describe "<%= $PLASTER_PARAM_FunctionName %> Unit Tests" -Tag Unit {
+Describe "Get-DynamicFunctionPipelineParameterName Unit Tests" -Tag Unit {
 
     BeforeAll {
         $moduleProjectPath = $PSScriptRoot | Split-Path -Parent | Split-Path -Parent
@@ -25,18 +24,8 @@ Describe "<%= $PLASTER_PARAM_FunctionName %> Unit Tests" -Tag Unit {
     Context "Parameter Tests" {
 
         BeforeAll {
-<%
-                if ($PLASTER_PARAM_FunctionType -eq 'Private') {
-            @'
             # Executing this in the module scope since private functions are not available
-            $commandInfo = InModuleScope -ModuleName <%= $PLASTER_PARAM_ModuleName %> -ScriptBlock { Get-Command -Name '<%= $PLASTER_PARAM_FunctionName %>' }
-'@
-                } else {
-            @'
-            $commandInfo = Get-Command -Name '<%= $PLASTER_PARAM_FunctionName %>'
-'@
-                }
-%>
+            $commandInfo = InModuleScope -ModuleName Dynamic -ScriptBlock { Get-Command -Name 'Get-DynamicFunctionPipelineParameterName' }
         }
 
         It 'Should have [<Type>] parameter [<Name>] ' -TestCases $parameterTestCases {
@@ -65,7 +54,7 @@ Describe "<%= $PLASTER_PARAM_FunctionName %> Unit Tests" -Tag Unit {
 
 }
 
-Describe "<%= $PLASTER_PARAM_FunctionName %> Integration Tests" -Tag Integration {
+Describe "Get-DynamicFunctionPipelineParameterName Integration Tests" -Tag Integration {
 
     # Context "Use case" {
 
@@ -81,3 +70,4 @@ Describe "<%= $PLASTER_PARAM_FunctionName %> Integration Tests" -Tag Integration
     # ...
 
 }
+

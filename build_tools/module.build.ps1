@@ -1,7 +1,8 @@
 Param(
     [string]$ModuleName,
     [switch]$Coverage,
-    [double]$MinimumCoverage
+    [double]$MinimumCoverage,
+    [switch]$CI
 )
 
 # Synopsis: Runs full Build and Test process
@@ -103,10 +104,20 @@ Enter-Build {
         )
         $Exclude = $Exclude | ForEach-Object { $_ -replace '\\','\\' }
         $ReferenceHashes = Get-ChildItem -Path "$ReferenceFolder" -Recurse |
-            Where-Object { $_.FullName -notmatch ($Exclude -join '|') } |
+            Where-Object { $_.FullName -notmatch ($Exclude -join '|') -and $_ -is [System.IO.FileInfo] } |
+            ForEach-Object {
+                $content = Get-Content $_.FullName
+                $content | Set-Content $_.FullName
+                $_.FullName
+            } |
             Get-FileHash
         $DifferenceHashes = Get-ChildItem -Path "$DifferenceFolder" -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.FullName -notmatch ($Exclude -join '|') } |
+            Where-Object { $_.FullName -notmatch ($Exclude -join '|') -and $_ -is [System.IO.FileInfo] } |
+            ForEach-Object {
+                $content = Get-Content $_.FullName
+                $content | Set-Content $_.FullName
+                $_.FullName
+            } |
             Get-FileHash
         $files = $ReferenceHashes + $DifferenceHashes
 
@@ -320,10 +331,10 @@ function GetPublicFunctionInterfaces {$function:GetPublicFunctionInterfaces}
 "@)
         $scriptBlock = {
             # Detecting ReleasedModule Functions
-            $releasedModuleManifestPath = "$Using:ReleasedModulePath\$Using:ModuleName\$Using:ModuleName.psd1"
+            $releasedModule = "$Using:ReleasedModulePath\$Using:ModuleName"
 
-            if (Test-Path -Path $releasedModuleManifestPath) {
-                $oldFunctionList = (Import-Module -Name "$releasedModuleManifestPath" -Force -PassThru).ExportedFunctions.Values
+            if (Test-Path -Path $releasedModule) {
+                $oldFunctionList = (Import-Module -Name $releasedModule -Force -PassThru).ExportedFunctions.Values
                 $oldFunctionInterfaces = GetPublicFunctionInterfaces -FunctionList $oldFunctionList
 
                 # Detecting Current Module Functions
@@ -416,13 +427,13 @@ function GetPublicFunctionInterfaces {$function:GetPublicFunctionInterfaces}
         $relativeManifestPath = "$Script:Source\$Script:ModuleName.psd1" | Resolve-Path -Relative
         Write-Output "  Detected manual version increment, using version from $($relativeManifestPath): [$version]"
         $Script:NeedsPublished = $true
-    } elseif (-not $Prerelease -and $releaseIsPrerelease -and -not $VersionIncrement) {
+    } elseif (-not $Prerelease -and $releaseIsPrerelease -and -not $DetectedVersionIncrement) {
         $version = $releasedVersion
         Write-Output "  Promoting [$version] to release!"
         $Script:NeedsPublished = $true
-    } elseif ($VersionIncrement) {
-        $version = [Version](Step-Version -Version $releasedVersion -By $VersionIncrement)
-        Write-Output "  Stepping module from released version [$releasedVersion] to new version [$version] by [$VersionIncrement] revision"
+    } elseif ($DetectedVersionIncrement) {
+        $version = [Version](Step-Version -Version $releasedVersion -By $DetectedVersionIncrement)
+        Write-Output "  Stepping module from released version [$releasedVersion] to new version [$version] by [$DetectedVersionIncrement] revision"
         $Script:NeedsPublished = $true
     } else {
         Write-Output "No changes detected, using version from released version [$releasedVersion]"
@@ -471,21 +482,18 @@ Task Pester {
     }
 
     Write-Output "  Setting up test configuration"
-    $configuration                           = New-PesterConfiguration
-    $configuration.Run.Path                  = @($Script:Tests)
-    $configuration.Output.Verbosity          = 'Detailed'
-    $configuration.Run.PassThru              = $true
-    $configuration.TestResult.Enabled        = $true
-    $configuration.TestResult.OutputPath     = "$Script:Build\testResults.xml"
-    $configuration.Should.ErrorAction        = 'SilentlyContinue'
-
-    if ($Script:Coverage) {
-        $configuration.CodeCoverage.Enabled               = $true
-        $configuration.CodeCoverage.Path                  = $coveragePaths
-        $configuration.CodeCoverage.OutputFormat          = 'JaCoCo'
-        $configuration.CodeCoverage.OutputPath            = "$Script:Build\coverage.xml"
-        $configuration.CodeCoverage.CoveragePercentTarget = $MinimumCoverage
-    }
+    $configuration                                    = New-PesterConfiguration
+    $configuration.Run.Path                           = @($Script:Tests)
+    $configuration.Output.Verbosity                   = 'Normal'
+    $configuration.Run.PassThru                       = $true
+    $configuration.TestResult.Enabled                 = $true
+    $configuration.TestResult.OutputPath              = "$Script:Build\testResults.xml"
+    $configuration.Should.ErrorAction                 = 'SilentlyContinue'
+    $configuration.CodeCoverage.Enabled               = $Script:Coverage.IsPresent
+    $configuration.CodeCoverage.Path                  = $coveragePaths
+    $configuration.CodeCoverage.OutputFormat          = if ($CI) { 'JaCoCo' } else { 'CoverageGutters' }
+    $configuration.CodeCoverage.OutputPath            = "$Script:Build\coverage.xml"
+    $configuration.CodeCoverage.CoveragePercentTarget = $MinimumCoverage
     Write-Output "  Starting Pester tests"
     $pesterResults = Invoke-Pester -Configuration $configuration -Verbose:$VerbosePreference
 
