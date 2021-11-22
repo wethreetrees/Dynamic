@@ -1,6 +1,6 @@
 # ✨ Dynamic ✨
 
-Working with dynamic parameters in PowerShell has never been *easy*. With the **Dynamic** module, I am setting out to change that forever.
+Working with dynamic parameters in PowerShell has never been *easy*. The **Dynamic** module will change that forever.
 
 The *old* way requires users to have an advanced knowledge of PowerShell and using .NET objects to even get started. There is **tons** of great documentation, in the community, that provides step-by-step instructions on how to define and use dynamic parameters, but it still **feels** bad.
 
@@ -55,7 +55,7 @@ function Write-Hello
 }
 ```
 
-**Dynamic** enables PowerShell developers to define dynamic parameters in the param blocks of their existing functions with a *set it and forget it* mentality.
+**Dynamic** enables PowerShell developers to naturally define dynamic parameters in the param blocks of their existing functions, as it should be.
 
 ```powershell
 # The FUTURE (⌐■_■)
@@ -100,7 +100,7 @@ function Write-Hello {
 
 ## 💻 Installation
 
-You can install the latest release from the [PSGallery](https://www.powershellgallery.com/packages/Dynamic) with:
+Install the latest release from the [PSGallery](https://www.powershellgallery.com/packages/Dynamic)
 
 ```powershell
 Install-Module -Name Dynamic -Repository PSGallery

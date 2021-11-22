@@ -24,7 +24,7 @@ function Write-Hello {
     process {
         Write-Output "Hello, $Name!"
         if ($Planet) {
-            Write-Output "Welome to $Planet!"
+            Write-Output "Welcome to $Planet!"
         }
     }
 

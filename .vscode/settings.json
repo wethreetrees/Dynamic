@@ -13,5 +13,10 @@
   },
   "coverage-gutters.showGutterCoverage": false,
   "coverage-gutters.showLineCoverage": true,
-  "powershell.pester.useLegacyCodeLens": false
+  "coverage-gutters.coverageFileNames": [
+    "coverage.xml"
+  ],
+  "coverage-gutters.coverageReportFileName": "build/coverage.xml",
+  "powershell.pester.useLegacyCodeLens": false,
+  "powershell.pester.outputVerbosity": "Detailed"
 }
