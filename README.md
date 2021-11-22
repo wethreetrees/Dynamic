@@ -1,8 +1,14 @@
+[![PowerShell Gallery Version (including pre-releases)](https://img.shields.io/powershellgallery/v/Dynamic?include_prereleases&style=flat-square)](https://www.powershellgallery.com/packages/Dynamic)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/Dynamic?style=flat-square)](https://www.powershellgallery.com/packages/Dynamic)
+[![GitHub last commit (branch)](https://img.shields.io/github/last-commit/wethreetrees/Dynamic/master?style=flat-square)](https://github.com/wethreetrees/Dynamic/commit/master)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/wethreetrees/Dynamic/CICD/master?style=flat-square)](https://github.com/wethreetrees/Dynamic/actions)
+
+
 # ✨ Dynamic ✨
 
 Working with dynamic parameters in PowerShell has never been *easy*. The **Dynamic** module will change that forever.
 
-The *old* way requires users to have an advanced knowledge of PowerShell and using .NET objects to even get started. There is **tons** of great documentation, in the community, that provides step-by-step instructions on how to define and use dynamic parameters, but it still **feels** bad.
+In the past, developers were required to have an advanced knowledge of PowerShell and experience using .NET objects to even get started with dynamic parameters. **Tons** of great documentation exists, in the community, to provide step-by-step instructions for defining and using dynamic parameters, but it still ***feels*** bad.
 
 ```powershell
 # The PAST (╯°□°）╯︵ ┻━┻
@@ -148,7 +154,7 @@ This gives you the benefit of fully supported `[Dynamic()]` attributes as well a
 
 ### ⚙ Advanced Integration
 
-*Reference:*  [WriteHello Test Module](./tests/resources/WriteHello/WriteHello.psm1)
+*Reference:*  [WriteHello Test Module](./tests/resources/TestModules/WriteHello/WriteHello.psm1)
 
 You can *overwrite* your existing function defintions in memory while loading your module. This is a highly recommended method, but you lose the ability to debug your function scripts in your IDE. So it will always be recommended to integrate using the full integration method above.
 
