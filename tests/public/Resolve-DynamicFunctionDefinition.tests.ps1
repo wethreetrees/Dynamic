@@ -15,7 +15,7 @@ BeforeDiscovery {
 
     # Setup custom function test cases
     $TestModulePath = "$PSScriptRoot/../resources/TestModules/WriteHello"
-    $expectedFileDir = Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath resources -AdditionalChildPath FunctionDefinitions
+    $expectedFileDir = Join-Path -Path (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath resources) -ChildPath FunctionDefinitions
     $functionTestCases = Get-ChildItem -Path (Join-Path -Path $TestModulePath -ChildPath public) |
         ForEach-Object {
             $expectedFilePath = Join-Path -Path $expectedFileDir -ChildPath ($_.Name -replace '.ps1', '.dyndef.ps1')

@@ -109,16 +109,14 @@ Enter-Build {
                 $content = Get-Content $_.FullName
                 $content | Set-Content $_.FullName
                 $_.FullName
-            } |
-            Get-FileHash
+            } | ForEach-Object { Get-FileHash -Path $_ }
         $DifferenceHashes = Get-ChildItem -Path "$DifferenceFolder" -Recurse -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -notmatch ($Exclude -join '|') -and $_ -is [System.IO.FileInfo] } |
             ForEach-Object {
                 $content = Get-Content $_.FullName
                 $content | Set-Content $_.FullName
                 $_.FullName
-            } |
-            Get-FileHash
+            } | ForEach-Object { Get-FileHash -Path $_ }
         $files = $ReferenceHashes + $DifferenceHashes
 
         foreach ($ReferenceHash in $ReferenceHashes) {
