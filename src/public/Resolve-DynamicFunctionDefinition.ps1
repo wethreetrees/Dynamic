@@ -79,6 +79,11 @@ function Resolve-DynamicFunctionDefinition {
             # Store list of non-pipeline bound parameters
             $standardParamList = [System.Collections.ObjectModel.Collection[string]]::new()
 
+            $commentBasedHelpString = Get-DynamicFunctionCommentBasedHelp -FunctionInfo $FunctionInfo
+            if ($commentBasedHelpString) {
+                $null = $result.AppendLine($commentBasedHelpString)
+            }
+
             # If function does not contain cmdlet binding, return the original definition
             if (Assert-DynamicFunctionIsAdvanced -FunctionInfo $FunctionInfo) {
                 $null = $result.AppendLine("function $($FunctionInfo.Name) {")
@@ -113,7 +118,19 @@ function Resolve-DynamicFunctionDefinition {
 
             if ($staticParameters) {
                 foreach ($staticParameter in $staticParameters) {
-                    $paramList.Add($staticParameter.Extent.Text)
+                    $staticParameterCommentHelp = Get-DynamicFunctionParameterCommentHelp -ParameterAst $staticParameter -FunctionInfo $FunctionInfo
+
+                    $staticParamStringBuilder = New-Object -TypeName System.Text.StringBuilder
+
+                    if ($staticParameterCommentHelp) {
+                        $null = $staticParamStringBuilder.AppendLine($staticParameterCommentHelp)
+                        $null = $staticParamStringBuilder.Append("        " + $staticParameter.Extent.Text)
+                    } else {
+                        $null = $staticParamStringBuilder.Append($staticParameter.Extent.Text)
+                    }
+
+
+                    $paramList.Add($staticParamStringBuilder.ToString())
                 }
             }
 

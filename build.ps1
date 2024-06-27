@@ -1,6 +1,6 @@
 [CmdletBinding(DefaultParameterSetName = 'Default')]
 Param (
-    [Parameter()]
+    [Parameter(Position = 0)]
     $Task = 'Default',
 
     [Parameter(Mandatory, ParameterSetName = 'Coverage')]

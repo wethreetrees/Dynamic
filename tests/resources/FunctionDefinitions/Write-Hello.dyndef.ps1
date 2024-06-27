@@ -1,8 +1,19 @@
+<#
+.DESCRIPTION
+    A simple function that writes a greeting to the console
+.EXAMPLE
+    Write-Hello
+    Hello, World!
+.PARAMETER NAME
+    The name of the person to greet
+#>
+
 function Write-Hello {
     [CmdletBinding()]
     param (
+        # The name of the person to greet
         [Parameter()]
-        $Name = 'World'
+        [string]$Name = 'World'
     )
 
     dynamicparam {

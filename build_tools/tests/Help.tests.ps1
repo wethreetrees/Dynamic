@@ -33,7 +33,8 @@ BeforeDiscovery {
         'WarningAction',
         'WarningVariable',
         'Confirm',
-        'Whatif'
+        'Whatif',
+        'ProgressAction'
     )
 
     $commandParametersTestCases = $commands | ForEach-Object {
