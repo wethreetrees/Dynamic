@@ -300,6 +300,10 @@ function Get-Recipe
 
 ```
 
+## Contributing
+
+See our contribution docs [here](/CONTRIBUTING.md).
+
 ## 🙏 Acknowledgments
 
 Inspired **greatly** by [Dr. Tobias Weltner](https://github.com/TobiasPSP/) and his amazing work at [powershell.one](https://powershell.one/)
